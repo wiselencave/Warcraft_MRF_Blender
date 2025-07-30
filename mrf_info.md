@@ -80,7 +80,9 @@ There are three options to display the MRF model and play its animation:
 
 - Using a model as a unit portrait. MRF models can be displayed in the portrait view of units, utilizing the MDX camera. 
 
-As for the world space and the space of 3D menu screens and campaigns (in pre-reforged patches), MRF will also be rendered there, but only as a static object, that is, the mesh from zero frame of the MRF will be loaded.
+- Using a model as 3D main menu screen in pre-reforged patches.
+
+As for the world space and the space of 3D campaign screens, MRF will also be rendered there, but only as a static object, that is, the mesh from zero frame of the MRF will be loaded.
 
 In short, **MRF animation is only functional in screen space, and while the map is running**.
 
@@ -94,8 +96,8 @@ One possible explanation is that the distance from the sprite's camera to its ve
 
 ### **Known Workarounds:**
 
-1. **Activating the Portrait Frame:**  
-In some cases this helps, perhaps the camera parameters from the portrait model begin to influence the sprite camera parameters.
+1. **Using the ORIGIN_PORTRAIT_FRAME as parent:**  
+In some cases this helps.
 
 2. **Hiding Terrain:**  
 Using the native function `BlzShowTerrain(false)`. This does not fully solve the issue, but it prevents SPRITE frames from completely sinking under the landscape.
