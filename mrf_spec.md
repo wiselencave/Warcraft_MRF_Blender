@@ -83,7 +83,7 @@ The string is parsed from the beginning of the chunk up to the first dot charact
 | **byte[]** | Padding to align to the next 16-byte boundary (if necessary) |
 
 ## Face Data
-Each face is represented as three `uint16` with vertex numbers. All faces go one after another. The number of faces is in the [Header](#header).
+Index buffer: array of `uint16`, interpreted as triangle list. The number of indices is in the [Header](#header).
 #### Chunk structure
 | Type  | Description |
 |------|-------|
@@ -103,8 +103,9 @@ The number of vertices is in the [Header](#header).
 | **byte[]** | Padding to align to the next 16-byte boundary (if necessary) |
 
 ## Keyframe 
-The `vector3` of the absolute (world) position of the vertex, and the `vector3` of its normal in a given frame are stored here. Repeats for each vertex.  
-Each keyframe has its own chunk. The number of keyframes is in the [Header](#header).
+Each keyframe is stored as a separate chunk and contains a complete snapshot of the state (position and normal) of all vertices in the mesh.
+
+The total number of keyframes is specified in the [Header](#header).
 #### Chunk structure
 | Type  | Description |
 |------|-------|
