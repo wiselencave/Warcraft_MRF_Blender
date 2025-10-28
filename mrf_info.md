@@ -9,7 +9,7 @@ This documentation and [specification](mrf_spec.md) are based on reverse enginee
 
 MRF is a three-dimensional model format that contains one vertex animation. These models were used by Blizzard for Arthas' cape in the classic cinematic model of the battle between Arthas and Illidan.
 
-In the Reforged version correct render of the MRF is only possible in the classic version of the graphic (SD), while in the HD there are some troubles with blending.
+In the Reforged version correct render of the MRF is only possible in the classic version of the graphic (SD), while in the HD there are some troubles with culling.
 
 An array of triangles (faces), a UV Mapping and a path to a image texture are stored in the model as static data.
 The vertex data is divided into an array of keyframes. Each keyframe is represented as an array of coordinates and normals for each vertex. Keyframes replace each other at a given frequency, and the graphics engine interpolates the movement of the mesh between them.  
@@ -59,7 +59,7 @@ EventObject "MRFxY" {
     }
 }
 ```
-| Fielf  | Description |
+| Field  | Description |
 |------|-------|
 | `MRF`| The event object identifier. This tells the game that an MRF  should triggered |
 | `x` | A single character that serves to make the event object name unique. It follows Warcraft's naming conventions|
@@ -76,7 +76,7 @@ There are three options to display the MRF model and play its animation:
 - Output a `SPRITE` frame via Frames API using a camera from the MDX/MDL model. 
 *If a world frame is used as the parent, then the global lighting model (DNC with default directional light) from the current map will be used as the light source.*
 
-- Native `PlayModelCinematic(MDX/MDL model)` function.  For example *PlayModelCinematic( "Doodads\\Cinematic\\ArthasIllidanFight\\ArthasIllidanFight.mdl" )*.
+- Using model with MRF as a transition model with a native `PlayModelCinematic(MDX/MDL model)` function.  For example *PlayModelCinematic( "Doodads\\Cinematic\\ArthasIllidanFight\\ArthasIllidanFight.mdl" )*.
 
 - Using a model as a unit portrait. MRF models can be displayed in the portrait view of units, utilizing the MDX camera. 
 
@@ -84,15 +84,12 @@ There are three options to display the MRF model and play its animation:
 
 As for the world space and the space of 3D campaign screens, MRF will also be rendered there, but only as a static object, that is, the mesh from zero frame of the MRF will be loaded.
 
-In short, **MRF animation is only functional in screen space, and while the map is running**.
-
 ## Rendering Issues with Frame API
 
 When rendering MRF models through the **Frame API** as `SPRITE`, a particularly annoying issue may arise: the sprite can sometimes "sink" into world models. In other words, instead of rendering clearly above world geometry, it appears as though both world models and the sprite are being drawn in the same space. This creates a visual glitch where parts of the MRF model seem to be clipped or occluded by the environment.
 
 This is **not a specific issue with MRF**, but rather a general problem with `SPRITE` frames in Warcraft III. The exact mechanism is unclear, but from experimental observations, it seems that the issue might be related to depth calculations between the sprite's camera and the game world. 
 One possible explanation is that the distance from the sprite's camera to its vertices shold be less than the distance from the game camera to world objects. 
-
 
 ### **Known Workarounds:**
 
