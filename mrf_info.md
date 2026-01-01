@@ -72,7 +72,7 @@ Warcraft ignores the pivot point of event object, as well as translation, rotati
 
 Since the link to the MRF  is part of the MDX/MDL, theoretically MRF can be played in any space where models can be played. But in fact, MRF *animation* is not supported everywhere.
 
-There are three options to display the MRF model and play its animation:
+There are four options to display the MRF model and play its animation:
 - Output a `SPRITE` frame via Frames API using a camera from the MDX/MDL model. 
 *If a world frame is used as the parent, then the global lighting model (DNC with default directional light) from the current map will be used as the light source.*
 
@@ -93,13 +93,13 @@ One possible explanation is that the distance from the sprite's camera to its ve
 
 ### **Known Workarounds:**
 
-1. **Using the ORIGIN_PORTRAIT_FRAME as parent:**  
-In some cases this helps.
+1. **Using the ORIGIN_PORTRAIT_FRAME as parent and make sure it is visible:**  
+In most cases this helps.
 
 2. **Hiding Terrain:**  
 Using the native function `BlzShowTerrain(false)`. This does not fully solve the issue, but it prevents SPRITE frames from completely sinking under the landscape.
 
-3. **Using UjAPI for Pre-Reforged Patches:**  
+3. **Using [UjAPI](https://github.com/UnryzeC/UjAPI) for Pre-Reforged Patches:**  
 The UjAPI dev claims to have patched this issue.
 
 For MRF output via portrait or `PlayModelCinematic` native, the issue is not relevant.
