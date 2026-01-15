@@ -20,10 +20,10 @@
 | **triangle** | 3 uint16 (vertex 0 ID, vertex 1 ID, vertex 2 ID) |
 
 # Data Structure
-The file consists of a header followed by multiple logical chunks, stored sequentially. Chunks do not have explicit identifiers or length fields; their locations are determined by offsets defined in the header.
+The file consists of a header followed by multiple logical chunks stored sequentially. Chunks do not have explicit identifiers or length fields. Their locations are determined by offsets defined in the header.
 
 > **Note:** These "chunks" are a logical abstraction used in this specification for clarity.
-> In the actual implementation, the original game parser does not treat the file as containing separate chunks. It parses the header, then directly accesses other sections using hardcoded offsets and pointer arithmetic. There is no runtime detection or validation of individual sections.
+> In the actual implementation, the original game parser does not treat the file as containing separate chunks. It parses the header (the first 80 bytes), then accesses other sections by reading offsets from the header and the keyframe offset table. There is no runtime detection or validation of individual sections.
 
 Although the game parser does not require chunk alignment, all known official `.mrf` files include zero-padding to align each logical chunk to a 16-byte boundary. This padding likely originates from the internal exporter used in development, possibly to match memory alignment requirements on 32-bit platforms.
 
@@ -43,22 +43,22 @@ The logical structure is as follows:
 # Chunks Description
 
 ## Header
-Header contains the magic ID, 3D model metadata, and offsets to fixed sections of the file.
+The header contains the magic ID, 3D model metadata, and offsets to fixed sections of the file.
 
-The original game parser treats only the first `80` bytes of the file as the binary header — this portion is copied directly into memory. The remaining fields are read manually using pointer arithmetic, rather than as part of a defined structure.
+The original game parser treats only the first `80` bytes of the file as the binary header. It copies this portion directly into memory. The remaining fields are read by offset rather than as part of a formalized structure.
 
 #### Chunk structure
 | Type  | Description |
 |------|-------|
-| **byte[4]** | Magic string `Morf`, represented as ASCII bytes: `4D 6F 72 66`. Although this field is read by the parser, its value is **not validated**. In practice, any 4-byte sequence is accepted without issue |
+| **byte[4]** | Magic string `Morf`, represented as ASCII bytes: `4D 6F 72 66`. The game parser reads this field but does **not validate** it. Any 4-byte sequence is accepted |
 | **uint32** | Number of keyframes (used as `nFrames`) |
 | **uint32** | Number of vertices (used as `nVerts`) |
 | **uint32** | Number of face indices (used as `nIndices`) |
-| **float** | ``frameDuration``. Time between frames in seconds. Inverted frame rate. Must be greater than `0` for correct playback. A value of `0` results in the model not being rendered, while a negative value causes the animation to display only the last keyframe|
+| **float** | ``frameDuration``. Time between frames in seconds (inverse frame rate). Must be greater than `0` for correct playback. A value of `0` prevents rendering, while a negative value displays only the last keyframe |
 | **vector3** | Pivot point. Read and stored, but has no effect in-game |
 | **float** | Bounds radius. Read and stored, but has no effect in-game |
-| **float** | Elapsed Time. Initial playback time in seconds. Defines when the animation starts. Negative values delay playback; positive values begin playback from a specific offset. Values exceeding `(nFrames - 1) × frameDuration` causes the animation to display only the last keyframe
-| **uint32** | Debug flag. Reserved for internal development use. Should be ``0``. Non-zero values trigger assertions and additional checks that verify texture handle state. Has no effect in retail versions
+| **float** | Elapsed time. Initial playback time in seconds. Negative values delay playback, while positive values start from an offset. Values exceeding `(nFrames - 1) × frameDuration` cause the animation to display only the last keyframe |
+| **uint32** | Debug flag. Reserved for internal development use. Should be ``0``. Non-zero values trigger assertions and extra checks for texture handle state. Has no noticable effect in retail versions |
 | **uint32[6]** | Ignored. Can contain any arbitrary data, typically zeros |
 | **uint32**  | Offset of [Texture Path](#texture-path) relative to the beginning of the file |
 | **uint32**  | Offset of [Face Data](#face-data) relative to the beginning of the file |
@@ -66,13 +66,13 @@ The original game parser treats only the first `80` bytes of the file as the bin
 
 ## Keyframe Offsets Table
 
-Immediately following the Header is a table of offsets, one per keyframe. Each entry is a `uint32` pointing to the start of a keyframe block, relative to the beginning of the file. The number of keyframes is in the [Header](#header).
+Immediately after the header is a table of offsets, one per keyframe. Each entry is a `uint32` pointing to the start of a keyframe block relative to the beginning of the file. The number of keyframes is in the [Header](#header).
 
 #### Chunk structure
 | Type         | Description |
 |--------------|-------------|
-| **uint32[nFrames]** | Array of [Keyframe](#keyframe) offsets. Starting from offset of keyframe `0` and ending with offset of keyframe `nFrames - 1` |
-| **byte[]**    | Padding to align to 16-byte boundary (if necessary) |
+| **uint32[nFrames]** | Array of [Keyframe](#keyframe) offsets for keyframes `0` through `nFrames - 1` |
+| **byte[]** | Padding to align to 16-byte boundary (if necessary) |
 
 ## Texture Path
 The string is parsed from the beginning of the chunk up to the first dot character (`.`). Any data following the dot, including zeros or arbitrary content, is ignored. As a result, the file extension is not required for texture lookup.
@@ -83,7 +83,7 @@ The string is parsed from the beginning of the chunk up to the first dot charact
 | **byte[]** | Padding to align to the next 16-byte boundary (if necessary) |
 
 ## Face Data
-Index buffer: array of `uint16`, interpreted as triangle list. The number of indices is in the [Header](#header).
+Index buffer: array of `uint16`, interpreted as a triangle list. The number of indices is in the [Header](#header).
 #### Chunk structure
 | Type  | Description |
 |------|-------|
@@ -91,7 +91,7 @@ Index buffer: array of `uint16`, interpreted as triangle list. The number of ind
 | **byte[]** | Padding to align to the next 16-byte boundary (if necessary) |
 
 ## Mapping Data
-`U` and `V` are stored for each vertex. We can represent this as `vector2`. 
+`U` and `V` are stored for each vertex as a `vector2`.
 The number of vertices is in the [Header](#header). 
 
 > **Note**: The V coordinate is flipped (`v = 1 - v`), following the DirectX UV convention.
@@ -103,7 +103,7 @@ The number of vertices is in the [Header](#header).
 | **byte[]** | Padding to align to the next 16-byte boundary (if necessary) |
 
 ## Keyframe 
-Each keyframe is stored as a separate chunk and contains a complete snapshot of the state (position and normal) of all vertices in the mesh.
+Each keyframe is stored as a separate chunk and contains a complete snapshot of all vertex positions and normals.
 
 The total number of keyframes is specified in the [Header](#header).
 #### Chunk structure
