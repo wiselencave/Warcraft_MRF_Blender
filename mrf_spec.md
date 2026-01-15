@@ -54,7 +54,7 @@ The original game parser treats only the first `80` bytes of the file as the bin
 | **uint32** | Number of keyframes (used as `nFrames`) |
 | **uint32** | Number of vertices (used as `nVerts`) |
 | **uint32** | Number of face indices (used as `nIndices`) |
-| **float** | ``frameDuration``. Time between frames in seconds (inverse frame rate). Must be greater than `0` for correct playback. A value of `0` prevents rendering, while a negative value displays only the last keyframe |
+| **float** | ``frameDuration``. Time between keyframes in seconds (inverse keyframe rate). Must be greater than `0` for correct playback. A value of `0` prevents rendering, while a negative value displays only the last keyframe |
 | **vector3** | Pivot point. Read and stored, but has no effect in-game |
 | **float** | Bounds radius. Read and stored, but has no effect in-game |
 | **float** | Elapsed time. Initial playback time in seconds. Negative values delay playback, while positive values start from an offset. Values exceeding `(nFrames - 1) × frameDuration` cause the animation to display only the last keyframe |
