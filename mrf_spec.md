@@ -50,19 +50,19 @@ The original game parser treats only the first `80` bytes of the file as the bin
 #### Chunk structure
 | Type  | Description |
 |------|-------|
-| **byte[4]** | Magic string `Morf`, represented as ASCII bytes: `4D 6F 72 66`. The game parser reads this field but does **not validate** it. Any 4-byte sequence is accepted |
-| **uint32** | Number of keyframes (used as `nFrames`) |
-| **uint32** | Number of vertices (used as `nVerts`) |
-| **uint32** | Number of face indices (used as `nIndices`) |
-| **float** | ``frameDuration``. Time between keyframes in seconds (inverse keyframe rate). Must be greater than `0` for correct playback. A value of `0` prevents rendering, while a negative value displays only the last keyframe |
-| **vector3** | Pivot point. Read and stored, but has no effect in-game |
-| **float** | Bounds radius. Read and stored, but has no effect in-game |
-| **float** | Elapsed time. Initial playback time in seconds. Negative values delay playback, while positive values start from an offset. Values exceeding `(nFrames - 1) × frameDuration` cause the animation to display only the last keyframe |
-| **uint32** | Debug flag. Reserved for internal development use. Should be ``0``. Non-zero values trigger assertions and extra checks for texture handle state. Has no noticable effect in retail versions |
-| **uint32[6]** | Ignored. Can contain any arbitrary data, typically zeros |
-| **uint32**  | Offset of [Texture Path](#texture-path) relative to the beginning of the file |
-| **uint32**  | Offset of [Face Data](#face-data) relative to the beginning of the file |
-| **uint32**  | Offset of [Mapping Data](#mapping-data) relative to the beginning of the file |
+| **byte[4]** | Magic string `Morf`, represented as ASCII bytes: `4D 6F 72 66`. The game parser reads this field but does **not validate** it. Any 4-byte sequence is accepted. |
+| **uint32** | Number of keyframes (used as `nFrames`). |
+| **uint32** | Number of vertices (used as `nVerts`). |
+| **uint32** | Number of face indices (used as `nIndices`). |
+| **float** | ``frameDuration``. Time between keyframes in seconds (inverse keyframe rate). Must be greater than `0` for correct playback. A value of `0` prevents rendering, while a negative value displays only the last keyframe. |
+| **vector3** | Pivot point. Parsed and stored, but not referenced by any internal function after initialization. |
+| **float** | Bounds radius. Parsed and stored, but not referenced by any internal function after initialization. |
+| **float** | Initial playback time in seconds. During playback this value is incremented each frame and clamped to ``(nFrames - 1) × frameDuration``, after which the animation freezes on the last keyframe. Negative values delay the start of playback, positive values start from an offset. |
+| **uint32** | Debug flag. Typically ``0``. In debug builds, a non-zero value triggers an assertion that guards against double-initialization of the same morph slot. Under normal conditions this assertion should never fire. No visible effect has been observed in retail versions. |
+| **uint32[6]** | Parsed and stored, but not referenced by any internal function. Typically zeros. |
+| **uint32**  | Offset of [Texture Path](#texture-path) relative to the beginning of the file. |
+| **uint32**  | Offset of [Face Data](#face-data) relative to the beginning of the file. |
+| **uint32**  | Offset of [Mapping Data](#mapping-data) relative to the beginning of the file. |
 
 ## Keyframe Offsets Table
 
