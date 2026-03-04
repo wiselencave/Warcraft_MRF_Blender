@@ -12,7 +12,7 @@ MRF is a three-dimensional model format that contains one vertex animation. Thes
 In the Reforged version correct render of the MRF is only possible in the classic version of the graphic (SD), while in the HD there are some troubles with culling.
 
 An array of triangles (faces), a UV Mapping and a path to a image texture are stored in the model as static data.
-The vertex data is divided into an array of keyframes. Each keyframe is represented as an array of coordinates and normals for each vertex. Keyframes replace each other at a given frequency, and the graphics engine interpolates the movement of the mesh between them.  
+The vertex data is divided into an array of keyframes. Each keyframe is represented as an array of coordinates and normals for each vertex. Keyframes replace each other at a given frequency, and the graphics engine linearly interpolates vertex positions and normals between adjacent keyframes. 
 
 MRF only supports one static texture without blending. Transparent pixels are rendered as black. 
 
@@ -93,7 +93,7 @@ One possible explanation is that the distance from the sprite's camera to its ve
 
 ### **Known Workarounds:**
 
-1. **Using the ORIGIN_PORTRAIT_FRAME as parent and make sure it is visible:**  
+1. **Using the `ORIGIN_PORTRAIT_FRAME` as parent and make sure it is visible:**  
 In most cases this helps.
 
 2. **Hiding Terrain:**  
