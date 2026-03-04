@@ -57,7 +57,7 @@ The original game parser treats only the first `80` bytes of the file as the bin
 | **float** | ``frameDuration``. Time between keyframes in seconds (inverse keyframe rate). Must be greater than `0` for correct playback. A value of `0` prevents rendering, while a negative value displays only the last keyframe. |
 | **vector3** | Pivot point. Parsed and stored, but not referenced by any internal function after initialization. |
 | **float** | Bounds radius. Parsed and stored, but not referenced by any internal function after initialization. |
-| **float** | Initial playback time in seconds. During playback this value is incremented each frame and clamped to ``(nFrames - 1) × frameDuration``, after which the animation freezes on the last keyframe. Negative values delay the start of playback, positive values start from an offset. |
+| **float** | Initial value of the playback time counter (elapsed time), in seconds. At runtime this value is incremented each frame and clamped to ``(nFrames - 1) × frameDuration``, after which the animation freezes on the last keyframe. Negative values delay the start of playback, positive values start from an offset. |
 | **uint32** | Debug flag. Typically ``0``. In debug builds, a non-zero value triggers an assertion that guards against double-initialization of the same morph slot. Under normal conditions this assertion should never fire. No visible effect has been observed in retail versions. |
 | **uint32[6]** | Parsed and stored, but not referenced by any internal function. Typically zeros. |
 | **uint32**  | Offset of [Texture Path](#texture-path) relative to the beginning of the file. |
