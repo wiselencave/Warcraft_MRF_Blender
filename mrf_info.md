@@ -18,21 +18,19 @@ MRF only supports one static texture without blending. Transparent pixels are re
 
 The MRF format also contains two main parameters that control animation playback:
 
-- **Frame duration** — Defines the speed of the animation is seconds.
+- **Frame duration** — The time interval between keyframes, in seconds (inverse of the keyframe rate).
 
-    - For example, if frame duration equals `0.033` seconds (typical value in Blizzard files), the animation plays at roughly `30` FPS.
+    - For example, if frame duration equals `0.033` seconds (typical value in Blizzard files), the animation plays at roughly `30` KFPS.
 
-    - If set to a negative value, the animation displays only the last keyframe.
+    - If set to a negative value, the animation freezes on the last keyframe.
 
     - If set to `0`, the model is not rendered.
 
-- **Elapsed time** — Controls the starting point of the animation. This works, but is not used in Blizzard files.
+- **Elapsed time** — The current playback position within the animation, in seconds. Always `0.0` in Blizzard files. At runtime, this value is incremented each frame and clamped to the total animation duration, freezing playback on the last keyframe. Looping is controlled via sequence settings and the `MRF`/`MRD` event objects in the parent model.
 
-    - Negative values delay the start of playback.
+    - Negative values delay the start: playback begins only after the value reaches 0.
 
     - Positive values begin playback from a specified offset.
-
-    - If the value exceeds the total animation time, the animation is frozen at the last keyframe.
 
 See [specification](mrf_spec.md) for details.
 
