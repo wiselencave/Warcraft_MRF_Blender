@@ -20,7 +20,7 @@
 | **triangle** | 3 uint16 (vertex 0 ID, vertex 1 ID, vertex 2 ID) |
 
 # Data Structure
-The file consists of a header, a keyframe offsets table, and a set of data sections. The sections do not have explicit identifiers or length fields. Their locations are determined by offsets stored in the header and the keyframe offsets table.
+The file consists of a [Header](#header), a [Keyframe Offsets Table](#keyframe-offsets-table), and a set of data sections. The sections do not have explicit identifiers or length fields. Their locations are determined by offsets stored in the header and the keyframe offsets table.
 
 The sections following the keyframe offsets table ([Texture Path](#texture-path), [Face Data](#face-data), [Mapping Data](#mapping-data), and all [Keyframes](#keyframe)) may appear in any order within the file. Arbitrary data may exist between them. The game parser imposes no constraints on their relative placement, as long as all stored offsets are correct.
 
