@@ -20,16 +20,13 @@
 | **triangle** | 3 uint16 (vertex 0 ID, vertex 1 ID, vertex 2 ID) |
 
 # Data Structure
-The file consists of a header followed by multiple logical chunks stored sequentially. Chunks do not have explicit identifiers or length fields. Their locations are determined by offsets defined in the header.
+The file consists of a header, a keyframe offsets table, and a set of data sections. The sections do not have explicit identifiers or length fields. Their locations are determined by offsets stored in the header and the keyframe offsets table.
 
-> **Note:** These "chunks" are a logical abstraction used in this specification for clarity.
-> In the actual implementation, the original game parser does not treat the file as containing separate chunks. It parses the header (the first 80 bytes), then accesses other sections by reading offsets from the header and the keyframe offset table. There is no runtime detection or validation of individual sections.
+The sections following the keyframe offsets table ([Texture Path](#texture-path), [Face Data](#face-data), [Mapping Data](#mapping-data), and all [Keyframes](#keyframe)) may appear in any order within the file. Arbitrary data may exist between them. The game parser imposes no constraints on their relative placement, as long as all stored offsets are correct.
 
-Although the game parser does not require chunk alignment, all known official `.mrf` files include zero-padding to align each logical chunk to a 16-byte boundary. This padding likely originates from the internal exporter used in development, possibly to match memory alignment requirements on 32-bit platforms.
+Although the game parser does not require section alignment, all known official `.mrf` files include zero-padding to align each logical section to a 16-byte boundary. This padding likely originates from the internal exporter used in development. Tools that produce `.mrf` files may omit padding without affecting game parser behavior.
 
-While not strictly required for correct parsing, preserving 16-byte alignment is recommended for compatibility with original data.
-
-The logical structure is as follows:
+The layout used in all known official files is:
 
 - Header
 - Keyframe Offsets Table
@@ -40,14 +37,14 @@ The logical structure is as follows:
 - ...
 - Keyframe N (last)
 
-# Chunks Description
+# Sections Description
 
 ## Header
 The header contains the magic ID, 3D model metadata, and offsets to fixed sections of the file.
 
 The original game parser treats only the first `80` bytes of the file as the binary header. It copies this portion directly into memory. The remaining fields are read by offset rather than as part of a formalized structure.
 
-#### Chunk structure
+#### Section structure
 | Type  | Description |
 |------|-------|
 | **byte[4]** | Magic string `Morf`, represented as ASCII bytes: `4D 6F 72 66`. The game parser reads this field but does **not validate** it. Any 4-byte sequence is accepted. |
@@ -68,15 +65,15 @@ The original game parser treats only the first `80` bytes of the file as the bin
 
 Immediately after the header is a table of offsets, one per keyframe. Each entry is a `uint32` pointing to the start of a keyframe block relative to the beginning of the file. The number of keyframes is in the [Header](#header).
 
-#### Chunk structure
+#### Section structure
 | Type         | Description |
 |--------------|-------------|
 | **uint32[nFrames]** | Array of [Keyframe](#keyframe) offsets for keyframes `0` through `nFrames - 1` |
 | **byte[]** | Padding to align to 16-byte boundary (if necessary) |
 
 ## Texture Path
-The string is parsed from the beginning of the chunk up to the first dot character (`.`). Any data following the dot, including zeros or arbitrary content, is ignored. As a result, the file extension is not required for texture lookup.
-#### Chunk structure
+The string is parsed from the beginning of the Section up to the first dot character (`.`). Any data following the dot, including zeros or arbitrary content, is ignored. As a result, the file extension is not required for texture lookup.
+#### Section structure
 | Type  | Description |
 |------|-------|
 | **str** | Texture path  |
@@ -84,7 +81,7 @@ The string is parsed from the beginning of the chunk up to the first dot charact
 
 ## Face Data
 Index buffer: array of `uint16`, interpreted as a triangle list. The number of indices is in the [Header](#header).
-#### Chunk structure
+#### Section structure
 | Type  | Description |
 |------|-------|
 | **triangle[nIndices / 3]** | Face (3 vertex IDs). Starting from face `0` and ending with face `nIndices / 3 - 1`  |
@@ -96,17 +93,17 @@ The number of vertices is in the [Header](#header).
 
 > **Note**: The V coordinate is flipped (`v = 1 - v`), following the DirectX UV convention.
 
-#### Chunk structure
+#### Section structure
 | Type  | Description |
 |------|-------|
 | **vector2[nVerts]** | Vertex UV coordinates. Starting from vertex `0` and ending with vertex `nVerts - 1` |
 | **byte[]** | Padding to align to the next 16-byte boundary (if necessary) |
 
 ## Keyframe 
-Each keyframe is stored as a separate chunk and contains a complete snapshot of all vertex positions and normals.
+Each keyframe is stored as a separate Section and contains a complete snapshot of all vertex positions and normals.
 
 The total number of keyframes is specified in the [Header](#header).
-#### Chunk structure
+#### Section structure
 | Type  | Description |
 |------|-------|
 | **(vector3, vector3)[nVerts]** | Vertex position and vertex normal. Each vertex stores a position followed by its normal, in an interleaved layout. Starting from vertex `0` and ending with vertex `nVerts - 1` |
