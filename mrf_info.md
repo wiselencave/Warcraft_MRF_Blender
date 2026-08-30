@@ -70,7 +70,7 @@ Warcraft ignores the pivot point of event object, as well as translation, rotati
 
 Since the link to the MRF  is part of the MDX/MDL, theoretically MRF can be played in any space where models can be played. But in fact, MRF *animation* is not supported everywhere.
 
-There are four options to display the MRF model and play its animation:
+There are five options to display the MRF model and play its animation:
 - Output a `SPRITE` frame via Frames API using a camera from the MDX/MDL model. 
 *If a world frame is used as the parent, then the global lighting model (DNC with default directional light) from the current map will be used as the light source.*
 
@@ -80,7 +80,13 @@ There are four options to display the MRF model and play its animation:
 
 - Using a model as 3D main menu screen in pre-reforged patches.
 
-As for the world space and the space of 3D campaign screens, MRF will also be rendered there, but only as a static object, that is, the mesh from zero frame of the MRF will be loaded.
+- Replacing one of the rally point or waypoint indicator models. Their paths come from the game interface (skin) constants `RallyIndicatorSrc`, `RallyIndicatorDst` and `WaypointIndicator`. This is the only known case where MRF animation plays in world space. The catch is that the indicator is only visible in its own situations — a rally point is set, or orders are being queued — and its position and facing are dictated by the game.
+
+Everywhere else — ordinary world space and the space of 3D campaign screens — MRF is still rendered, but as a static object: the engine keeps drawing the single keyframe that corresponds to the **Elapsed time** value stored in the file (frame zero in Blizzard's files).
+
+The reason is the way the engine keeps time for a model. It has several timing modes, and the morph's playback counter is advanced by only one of them — the one that adds the frame delta to the model on every tick. Everything placed in the world (units, effects, destructables, missiles, items) instead gets its animation time assigned from a global clock, and 3D campaign screens have their time driven externally. Neither of those modes touches the morph, so its counter never moves. Rally point and waypoint indicators are the exception: they are created without such a mode, which is why the animation plays for them.
+
+Note that this also means the **Elapsed time** field is the only way to choose *which* pose is shown in the world: bake a different value into the file and a different keyframe is displayed.
 
 ## Rendering Issues with Frame API
 
