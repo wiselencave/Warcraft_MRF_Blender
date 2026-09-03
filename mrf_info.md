@@ -9,7 +9,7 @@ This documentation and [specification](mrf_spec.md) are based on reverse enginee
 
 MRF is a three-dimensional model format that contains one vertex animation. These models were used by Blizzard for Arthas' cape in the classic cinematic model of the battle between Arthas and Illidan.
 
-In the Reforged version correct render of the MRF is only possible in the classic version of the graphic (SD), while in the HD there are some troubles with culling.
+In the Reforged version correct render of the MRF is only possible in the classic (SD) graphics mode. In HD the model is still drawn, animated and textured, but its own surfaces sort incorrectly against each other — see [HD graphics mode](#hd-graphics-mode).
 
 An array of triangles (faces), a UV Mapping and a path to a image texture are stored in the model as static data.
 The vertex data is divided into an array of keyframes. Each keyframe is represented as an array of coordinates and normals for each vertex. Keyframes replace each other at a given frequency, and the graphics engine linearly interpolates vertex positions and normals between adjacent keyframes. 
@@ -87,6 +87,12 @@ Everywhere else — ordinary world space and the space of 3D campaign screens �
 The reason is the way the engine keeps time for a model. It has several timing modes, and the morph's playback counter is advanced by only one of them — the one that adds the frame delta to the model on every tick. Everything placed in the world (units, effects, destructables, missiles, items) instead gets its animation time assigned from a global clock, and 3D campaign screens have their time driven externally. Neither of those modes touches the morph, so its counter never moves. Rally point and waypoint indicators are the exception: they are created without such a mode, which is why the animation plays for them.
 
 Note that this also means the **Elapsed time** field is the only way to choose *which* pose is shown in the world: bake a different value into the file and a different keyframe is displayed.
+
+## HD graphics mode
+
+MRF is always rendered **two-sided** — the engine disables backface culling for it. The winding order of the triangles therefore has no effect at all, and flipping faces in the source model changes nothing.
+
+In HD the mesh goes into the transparent pass without a depth pre-pass, and that pass sorts whole objects, not the triangles inside one object. Triangles of a single MRF are therefore drawn in the order they are stored in the file, so a surface that overlaps itself shows its far side over the near one, differently at every camera angle.
 
 ## Rendering Issues with Frame API
 
